@@ -56,18 +56,52 @@ app.post('/recipes',(req,res)=>{
 
 app.delete('/recipes/:recipeId', async (req, res) => {
   try {
-    const recipeId = req.params.userId;
-    const deletedUser = await User.findByIdAndDelete(recipeId);
+    const recipeId = req.params.recipeId;
+    console.log("Recipe ID:", recipeId);
 
-    if (!deletedUser) {
-      return res.status(404).json({ error: 'User not found' });
+   
+    //const deletedRecipe = await Recipe.findByIdAndDelete(recipeId);
+    const deletedRecipe = await Recipe.findOneAndDelete({ id: recipeId });
+
+    console.log(deletedRecipe)
+
+    if (!deletedRecipe) {
+      return res.status(404).json({ error: 'Recipe not found' });
     }  
-    res.json({ success: true, deletedUser });
+    res.json({ success: true, deletedRecipe });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+app.put('/recipes/:recipeId', async (req, res) => {
+    try {
+      const recipeId = req.params.recipeId;
+      const { title, ingredients, instructions, cookingTime } = req.body;
+  
+      // Update the recipe in the database
+      const updatedRecipe = await Recipe.findOneAndUpdate(
+        { id: recipeId },
+        { title, ingredients, instructions, cookingTime },
+        { new: true }
+      );
+  
+      // Check if the recipe was found and updated
+      if (!updatedRecipe) {
+        return res.status(404).json({ error: 'Recipe not found' });
+      }
+  
+      res.json({ success: true, updatedRecipe });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+  
+
+
 
 app.listen(PORT)
 console.log("Listening to the port "+ PORT)
